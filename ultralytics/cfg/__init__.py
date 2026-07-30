@@ -56,7 +56,7 @@ SOLUTION_MAP = {
 
 # Define valid tasks and modes
 MODES = frozenset({"train", "val", "predict", "export", "track", "benchmark"})
-TASKS = frozenset({"detect", "segment", "classify", "pose", "obb", "semantic", "depth"})
+TASKS = frozenset({"detect", "segment", "classify", "pose", "obb", "semantic", "depth", "seg6d"})
 TASK2DATA = {
     "detect": "coco8.yaml",
     "segment": "coco8-seg.yaml",
@@ -65,6 +65,7 @@ TASK2DATA = {
     "obb": "dota8.yaml",
     "depth": "depth8.yaml",
     "semantic": "cityscapes8.yaml",
+    "seg6d": "beer-seg6d.yaml",
 }
 TASK2CALIBRATIONDATA = {
     "detect": "coco128.yaml",
@@ -74,6 +75,7 @@ TASK2CALIBRATIONDATA = {
     "obb": "dota128.yaml",
     "depth": "depth8.yaml",
     "semantic": "cityscapes8.yaml",
+    "seg6d": "beer-seg6d.yaml",
 }
 TASK2MODEL = {
     "detect": "yolo26n.pt",
@@ -83,6 +85,7 @@ TASK2MODEL = {
     "obb": "yolo26n-obb.pt",
     "depth": "yolo26n-depth.pt",
     "semantic": "yolo26n-sem.pt",
+    "seg6d": "yolo26s-seg6d.yaml",
 }
 TASK2METRIC = {
     "detect": "metrics/mAP50-95(B)",
@@ -92,6 +95,7 @@ TASK2METRIC = {
     "obb": "metrics/mAP50-95(B)",
     "depth": "metrics/delta1",
     "semantic": "metrics/mIoU",
+    "seg6d": "metrics/mAP50-95(M)",
 }
 
 ARGV = sys.argv or ["", ""]  # sometimes sys.argv = []
@@ -239,6 +243,7 @@ CFG_FRACTION_KEYS = frozenset(
         "cutmix",
         "copy_paste",
         "erasing",
+        "bg_replace",
         "conf",
         "iou",
         "fraction",
@@ -259,6 +264,7 @@ CFG_INT_KEYS = frozenset(
         "line_width",
         "nbs",
         "save_period",
+        "pose_warmup_epochs",
     }
 )
 CFG_INT_MIN = {  # minimum valid values for integer arguments used as divisors, sizes or seeds
@@ -305,7 +311,7 @@ CFG_BOOL_KEYS = frozenset(
         "cls_remap",
     }
 )
-CFG_STR_KEYS = frozenset({"optimizer", "split", "copy_paste_mode", "auto_augment"})
+CFG_STR_KEYS = frozenset({"optimizer", "split", "copy_paste_mode", "auto_augment", "bg_dir", "bg_mask_dir"})
 
 
 def cfg2dict(cfg: str | Path | dict | SimpleNamespace) -> dict:
@@ -526,7 +532,9 @@ def get_save_dir(args: SimpleNamespace, name: str | None = None) -> Path:
             worker = os.environ.get("PYTEST_XDIST_WORKER")
             if worker and TESTS_RUNNING:  # isolate parallel pytest-xdist workers
                 base = base / worker
-            project = base / args.task / project
+            # seg6d nests under segment/ (avoid empty runs/seg6d from default val/predict)
+            task_dir = "segment" if args.task == "seg6d" else args.task
+            project = base / task_dir / project
         name = name or args.name or f"{args.mode}"
         save_dir = increment_path(Path(project) / name, exist_ok=args.exist_ok if RANK in {-1, 0} else True)
 

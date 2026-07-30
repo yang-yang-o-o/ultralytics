@@ -789,6 +789,7 @@ class BaseTrainer:
                 "obb",
                 "semantic",
                 "depth",
+                "seg6d",
             }:
                 data = check_det_dataset(self.args.data)
                 if "yaml_file" in data:

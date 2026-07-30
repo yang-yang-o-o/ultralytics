@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 import random
 from copy import deepcopy
+from pathlib import Path
 from typing import Any
 
 import cv2
@@ -2752,6 +2753,91 @@ class RandomLoadText(BaseTransform):
         labels["cls"] = params["new_cls"]
         labels["texts"] = params["texts"]
         return labels
+
+
+class RandomBackground(BaseTransform):
+    """YOLO6D-style random background replacement using FG mask (or instance polygons).
+
+    Keeps foreground pixels and replaces the rest with a random image from ``bg_dir``
+    (typically VOC2012/JPEGImages). Applied per-sample in ``get_image_and_label`` so mosaic
+    tiles also get independent backgrounds.
+    """
+
+    def __init__(self, bg_dir: str | Path, p: float = 1.0, mask_dir: str | Path | None = None):
+        """Initialize random background replacer.
+
+        Args:
+            bg_dir (str | Path): Directory of background images (.jpg/.png).
+            p (float): Probability of applying the replacement.
+            mask_dir (str | Path | None): Optional directory of FG masks named by image stem.
+        """
+        assert 0.0 <= p <= 1.0, f"bg_replace probability must be in [0, 1], got {p}"
+        self.p = float(p)
+        self.mask_dir = Path(mask_dir) if mask_dir else None
+        bg_path = Path(bg_dir)
+        if not bg_path.is_dir():
+            raise FileNotFoundError(f"bg_dir not found: {bg_path}")
+        exts = {".jpg", ".jpeg", ".png", ".bmp"}
+        self.bg_files = sorted(str(p) for p in bg_path.rglob("*") if p.suffix.lower() in exts)
+        if not self.bg_files:
+            raise FileNotFoundError(f"No background images under {bg_path}")
+        LOGGER.info(f"{colorstr('RandomBackground:')} {len(self.bg_files)} files from {bg_path} (p={self.p})")
+
+    def __call__(self, labels: dict[str, Any]) -> dict[str, Any]:
+        """Composite foreground onto a random VOC-style background."""
+        if self.p <= 0.0 or random.random() > self.p:
+            return labels
+        img = labels.get("img")
+        if img is None:
+            return labels
+        h, w = img.shape[:2]
+        mask = self._fg_mask(labels, h, w)
+        if mask is None or int(mask.max()) == 0:
+            return labels
+        bg = cv2.imread(random.choice(self.bg_files))
+        if bg is None:
+            return labels
+        if bg.ndim == 2:
+            bg = cv2.cvtColor(bg, cv2.COLOR_GRAY2BGR)
+        elif bg.shape[2] == 4:
+            bg = bg[:, :, :3]
+        bg = cv2.resize(bg, (w, h), interpolation=cv2.INTER_LINEAR)
+        alpha = mask.astype(np.float32)
+        if alpha.max() > 1.0:
+            alpha /= 255.0
+        alpha = alpha[..., None]
+        labels["img"] = (img.astype(np.float32) * alpha + bg.astype(np.float32) * (1.0 - alpha)).clip(0, 255).astype(
+            np.uint8
+        )
+        return labels
+
+    def _fg_mask(self, labels: dict[str, Any], h: int, w: int) -> np.ndarray | None:
+        """Build FG mask from mask_dir (preferred) or instance polygons."""
+        if self.mask_dir is not None:
+            stem = Path(str(labels.get("im_file", ""))).stem
+            for ext in (".png", ".jpg", ".jpeg"):
+                mp = self.mask_dir / f"{stem}{ext}"
+                if mp.exists():
+                    m = cv2.imread(str(mp), cv2.IMREAD_UNCHANGED)
+                    if m is None:
+                        break
+                    if m.ndim == 3:
+                        m = m.max(axis=2)
+                    if m.shape[:2] != (h, w):
+                        m = cv2.resize(m, (w, h), interpolation=cv2.INTER_NEAREST)
+                    return m
+        instances = labels.get("instances")
+        if instances is None or len(getattr(instances, "segments", [])) == 0:
+            return None
+        segs = instances.segments.copy()
+        if getattr(instances, "normalized", False):
+            segs = segs.astype(np.float32)
+            segs[..., 0] *= w
+            segs[..., 1] *= h
+        mask = np.zeros((h, w), dtype=np.uint8)
+        for s in segs:
+            cv2.fillPoly(mask, [np.round(s).astype(np.int32)], 255)
+        return mask
 
 
 def v8_transforms(dataset, imgsz: int, hyp: IterableSimpleNamespace):

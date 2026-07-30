@@ -1,0 +1,117 @@
+Transferred 844/928 items from pretrained weights
+Pose6D: n=30 mean_corner=119.27px mean_proj=2946.43px Acc@5px=0.0% mean_ADD=0.3817 Acc@0.1d=0.0%
+                   all         30         30      0.775      0.804      0.853      0.227      0.698      0.694      0.747      0.486
+Pose6D: n=30 mean_corner=74.25px mean_proj=57.74px Acc@5px=0.0% mean_ADD=0.1937 Acc@0.1d=10.0%
+                   all         30         30      0.808      0.733      0.855      0.255      0.708        0.6       0.72      0.417
+Pose6D: n=30 mean_corner=33.65px mean_proj=24.14px Acc@5px=0.0% mean_ADD=0.0435 Acc@0.1d=30.0%
+                   all         30         30      0.967      0.962      0.988      0.284      0.967      0.962      0.988      0.988
+Pose6D: n=30 mean_corner=26.58px mean_proj=18.52px Acc@5px=0.0% mean_ADD=0.0363 Acc@0.1d=30.0%
+                   all         30         30      0.935      0.967      0.989      0.315      0.935      0.967      0.989      0.989
+Pose6D: n=30 mean_corner=31.25px mean_proj=21.76px Acc@5px=0.0% mean_ADD=0.0430 Acc@0.1d=30.0%
+                   all         30         30      0.996          1      0.995       0.36      0.996          1      0.995      0.955
+Pose6D: n=30 mean_corner=17.95px mean_proj=11.10px Acc@5px=0.0% mean_ADD=0.0181 Acc@0.1d=60.0%
+                   all         30         30      0.999          1      0.995      0.243      0.999          1      0.995       0.99
+Pose6D: n=30 mean_corner=13.74px mean_proj=8.99px Acc@5px=6.7% mean_ADD=0.0132 Acc@0.1d=73.3%
+                   all         30         30      0.998          1      0.995      0.285      0.998          1      0.995      0.995
+Pose6D: n=30 mean_corner=12.67px mean_proj=8.07px Acc@5px=13.3% mean_ADD=0.0202 Acc@0.1d=50.0%
+                   all         30         30      0.998          1      0.995      0.249      0.998          1      0.995      0.995
+Pose6D: n=30 mean_corner=14.65px mean_proj=9.43px Acc@5px=6.7% mean_ADD=0.0192 Acc@0.1d=60.0%
+                   all         30         30      0.998          1      0.995      0.293      0.998          1      0.995      0.995
+Pose6D: n=30 mean_corner=12.43px mean_proj=8.05px Acc@5px=10.0% mean_ADD=0.0140 Acc@0.1d=73.3%
+                   all         30         30          1      0.993      0.995       0.25          1      0.993      0.995      0.995
+Pose6D: n=30 mean_corner=10.96px mean_proj=7.51px Acc@5px=6.7% mean_ADD=0.0099 Acc@0.1d=83.3%
+                   all         30         30      0.907          1      0.988      0.262      0.907          1      0.988      0.988
+Pose6D: n=30 mean_corner=11.87px mean_proj=7.86px Acc@5px=6.7% mean_ADD=0.0150 Acc@0.1d=63.3%
+                   all         30         30      0.999          1      0.995      0.283      0.999          1      0.995      0.995
+Pose6D: n=30 mean_corner=12.07px mean_proj=8.74px Acc@5px=6.7% mean_ADD=0.0086 Acc@0.1d=96.7%
+                   all         30         30      0.995          1      0.995      0.284      0.995          1      0.995      0.995
+Pose6D: n=30 mean_corner=11.17px mean_proj=7.81px Acc@5px=10.0% mean_ADD=0.0151 Acc@0.1d=73.3%
+                   all         30         30      0.991      0.967      0.993      0.287      0.991      0.967      0.993      0.993
+Pose6D: n=30 mean_corner=11.83px mean_proj=8.24px Acc@5px=6.7% mean_ADD=0.0166 Acc@0.1d=63.3%
+                   all         30         30          1          1      0.995      0.327          1          1      0.995      0.995
+Pose6D: n=30 mean_corner=11.98px mean_proj=9.55px Acc@5px=6.7% mean_ADD=0.0095 Acc@0.1d=96.7%
+                   all         30         30          1      0.995      0.995      0.274          1      0.995      0.995      0.995
+Pose6D: n=30 mean_corner=11.63px mean_proj=8.68px Acc@5px=6.7% mean_ADD=0.0117 Acc@0.1d=86.7%
+                   all         30         30          1      0.998      0.995      0.286          1      0.998      0.995      0.995
+Pose6D: n=30 mean_corner=13.59px mean_proj=9.98px Acc@5px=3.3% mean_ADD=0.0190 Acc@0.1d=60.0%
+                   all         30         30          1      0.986      0.995      0.293          1      0.986      0.995      0.995
+Pose6D: n=30 mean_corner=11.45px mean_proj=8.44px Acc@5px=10.0% mean_ADD=0.0168 Acc@0.1d=70.0%
+                   all         30         30      0.999      0.967      0.993      0.285      0.999      0.967      0.993      0.993
+Pose6D: n=30 mean_corner=12.36px mean_proj=8.79px Acc@5px=16.7% mean_ADD=0.0114 Acc@0.1d=86.7%
+                   all         30         30          1      0.996      0.995      0.281          1      0.996      0.995      0.995
+Pose6D: n=30 mean_corner=9.46px mean_proj=7.78px Acc@5px=6.7% mean_ADD=0.0106 Acc@0.1d=90.0%
+                   all         30         30          1      0.997      0.995      0.285          1      0.997      0.995      0.995
+Pose6D: n=30 mean_corner=7.54px mean_proj=5.42px Acc@5px=36.7% mean_ADD=0.0091 Acc@0.1d=90.0%
+                   all         30         30      0.998          1      0.995      0.292      0.998          1      0.995      0.995
+Pose6D: n=30 mean_corner=7.61px mean_proj=5.40px Acc@5px=40.0% mean_ADD=0.0080 Acc@0.1d=96.7%
+                   all         30         30      0.997          1      0.995      0.286      0.997          1      0.995      0.995
+Pose6D: n=30 mean_corner=9.43px mean_proj=6.82px Acc@5px=23.3% mean_ADD=0.0106 Acc@0.1d=86.7%
+                   all         30         30          1      0.994      0.995      0.269          1      0.994      0.995      0.995
+Pose6D: n=30 mean_corner=8.13px mean_proj=5.68px Acc@5px=40.0% mean_ADD=0.0106 Acc@0.1d=93.3%
+                   all         30         30          1      0.966      0.993      0.292          1      0.966      0.993      0.993
+Pose6D: n=30 mean_corner=6.76px mean_proj=4.99px Acc@5px=50.0% mean_ADD=0.0071 Acc@0.1d=96.7%
+                   all         30         30      0.998          1      0.995      0.279      0.998          1      0.995      0.995
+Pose6D: n=30 mean_corner=8.12px mean_proj=5.75px Acc@5px=36.7% mean_ADD=0.0100 Acc@0.1d=90.0%
+                   all         30         30      0.992          1      0.995      0.306      0.992          1      0.995      0.995
+Pose6D: n=30 mean_corner=7.55px mean_proj=5.38px Acc@5px=43.3% mean_ADD=0.0107 Acc@0.1d=80.0%
+                   all         30         30          1          1      0.995      0.301          1          1      0.995      0.995
+Pose6D: n=30 mean_corner=6.54px mean_proj=4.33px Acc@5px=70.0% mean_ADD=0.0067 Acc@0.1d=100.0%
+                   all         30         30      0.971          1      0.995      0.292      0.971          1      0.995      0.995
+Pose6D: n=30 mean_corner=7.75px mean_proj=5.32px Acc@5px=53.3% mean_ADD=0.0092 Acc@0.1d=96.7%
+                   all         30         30      0.998          1      0.995      0.303      0.998          1      0.995      0.995
+Pose6D: n=30 mean_corner=7.84px mean_proj=5.65px Acc@5px=36.7% mean_ADD=0.0121 Acc@0.1d=76.7%
+                   all         30         30      0.998          1      0.995      0.284      0.998          1      0.995      0.995
+Pose6D: n=30 mean_corner=7.73px mean_proj=5.42px Acc@5px=36.7% mean_ADD=0.0083 Acc@0.1d=93.3%
+                   all         30         30      0.997          1      0.995      0.277      0.997          1      0.995      0.995
+Pose6D: n=30 mean_corner=6.43px mean_proj=4.47px Acc@5px=66.7% mean_ADD=0.0073 Acc@0.1d=100.0%
+                   all         30         30      0.964      0.967      0.992      0.309      0.964      0.967      0.992      0.992
+Pose6D: n=30 mean_corner=6.76px mean_proj=4.62px Acc@5px=50.0% mean_ADD=0.0086 Acc@0.1d=90.0%
+                   all         30         30      0.932          1      0.992       0.29      0.932          1      0.992      0.992
+Pose6D: n=30 mean_corner=6.37px mean_proj=4.65px Acc@5px=60.0% mean_ADD=0.0080 Acc@0.1d=86.7%
+                   all         30         30      0.998          1      0.995      0.296      0.998          1      0.995      0.995
+Pose6D: n=30 mean_corner=7.88px mean_proj=5.57px Acc@5px=43.3% mean_ADD=0.0102 Acc@0.1d=86.7%
+                   all         30         30      0.966          1      0.993      0.269      0.966          1      0.993      0.993
+Pose6D: n=30 mean_corner=6.17px mean_proj=4.37px Acc@5px=70.0% mean_ADD=0.0095 Acc@0.1d=90.0%
+                   all         30         30      0.998          1      0.995      0.273      0.998          1      0.995      0.995
+Pose6D: n=30 mean_corner=6.92px mean_proj=4.89px Acc@5px=56.7% mean_ADD=0.0068 Acc@0.1d=96.7%
+                   all         30         30      0.998          1      0.995      0.311      0.998          1      0.995      0.995
+Pose6D: n=30 mean_corner=4.94px mean_proj=3.28px Acc@5px=93.3% mean_ADD=0.0052 Acc@0.1d=100.0%
+                   all         30         30          1          1      0.995      0.271          1          1      0.995      0.995
+Pose6D: n=30 mean_corner=6.32px mean_proj=4.63px Acc@5px=63.3% mean_ADD=0.0076 Acc@0.1d=96.7%
+                   all         30         30      0.998          1      0.995      0.302      0.998          1      0.995      0.995
+Pose6D: n=30 mean_corner=5.22px mean_proj=3.68px Acc@5px=83.3% mean_ADD=0.0077 Acc@0.1d=96.7%
+                   all         30         30       0.99          1      0.995      0.292       0.99          1      0.995      0.995
+Pose6D: n=30 mean_corner=6.14px mean_proj=4.41px Acc@5px=63.3% mean_ADD=0.0065 Acc@0.1d=96.7%
+                   all         30         30          1      0.992      0.995      0.288          1      0.992      0.995      0.995
+Pose6D: n=30 mean_corner=5.30px mean_proj=3.68px Acc@5px=90.0% mean_ADD=0.0068 Acc@0.1d=100.0%
+                   all         30         30          1          1      0.995      0.275          1          1      0.995      0.995
+Pose6D: n=30 mean_corner=5.67px mean_proj=3.94px Acc@5px=86.7% mean_ADD=0.0055 Acc@0.1d=100.0%
+                   all         30         30          1      0.999      0.995      0.308          1      0.999      0.995      0.995
+Pose6D: n=30 mean_corner=5.15px mean_proj=3.45px Acc@5px=100.0% mean_ADD=0.0090 Acc@0.1d=96.7%
+                   all         30         30      0.998          1      0.995      0.291      0.998          1      0.995      0.995
+Pose6D: n=30 mean_corner=4.92px mean_proj=3.50px Acc@5px=93.3% mean_ADD=0.0066 Acc@0.1d=96.7%
+                   all         30         30      0.999          1      0.995      0.288      0.999          1      0.995      0.995
+Pose6D: n=30 mean_corner=4.79px mean_proj=3.48px Acc@5px=86.7% mean_ADD=0.0053 Acc@0.1d=100.0%
+                   all         30         30      0.997          1      0.995      0.304      0.997          1      0.995      0.995
+Pose6D: n=30 mean_corner=4.50px mean_proj=3.01px Acc@5px=96.7% mean_ADD=0.0045 Acc@0.1d=100.0%
+                   all         30         30          1      0.998      0.995      0.297          1      0.998      0.995      0.995
+Pose6D: n=30 mean_corner=5.20px mean_proj=3.96px Acc@5px=80.0% mean_ADD=0.0058 Acc@0.1d=100.0%
+                   all         30         30      0.995      0.967      0.993      0.288      0.995      0.967      0.993      0.993
+Pose6D: n=30 mean_corner=5.28px mean_proj=3.57px Acc@5px=90.0% mean_ADD=0.0070 Acc@0.1d=100.0%
+                   all         30         30      0.998          1      0.995      0.285      0.998          1      0.995      0.995
+Pose6D: n=30 mean_corner=4.32px mean_proj=2.92px Acc@5px=90.0% mean_ADD=0.0049 Acc@0.1d=100.0%
+                   all         30         30          1      0.998      0.995      0.298          1      0.998      0.995      0.995
+Pose6D: n=30 mean_corner=3.92px mean_proj=2.74px Acc@5px=100.0% mean_ADD=0.0053 Acc@0.1d=100.0%
+                   all         30         30      0.968      0.997      0.994      0.291      0.968      0.997      0.994      0.994
+Pose6D: n=30 mean_corner=4.66px mean_proj=3.15px Acc@5px=93.3% mean_ADD=0.0070 Acc@0.1d=93.3%
+                   all         30         30      0.985          1      0.995      0.296      0.985          1      0.995      0.995
+Pose6D: n=30 mean_corner=5.52px mean_proj=3.97px Acc@5px=83.3% mean_ADD=0.0069 Acc@0.1d=100.0%
+                   all         30         30      0.998          1      0.995      0.299      0.998          1      0.995      0.995
+Pose6D: n=30 mean_corner=4.02px mean_proj=2.85px Acc@5px=100.0% mean_ADD=0.0043 Acc@0.1d=100.0%
+                   all         30         30      0.999          1      0.995      0.293      0.999          1      0.995      0.995
+EarlyStopping: Training stopped early as no improvement observed in last 40 epochs. Best results observed at epoch 15, best model saved as best.pt.
+To update EarlyStopping(patience=40) pass a new patience value, i.e. `patience=300` or use `patience=0` to disable EarlyStopping.
+55 epochs completed in 1.025 hours.
+Validating /root/ultralytics/runs/segment/beer-seg/yolo26s-seg-6dpose/weights/best.pt...
+Pose6D: n=30 mean_corner=11.82px mean_proj=8.24px Acc@5px=6.7% mean_ADD=0.0167 Acc@0.1d=63.3%
+                   all         30         30          1          1      0.995      0.327          1          1      0.995      0.995

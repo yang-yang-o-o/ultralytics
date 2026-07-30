@@ -217,6 +217,7 @@ class BaseValidator:
                 "obb",
                 "semantic",
                 "depth",
+                "seg6d",
             }:
                 self.data = check_det_dataset(self.args.data, split=self.args.split)
             else:

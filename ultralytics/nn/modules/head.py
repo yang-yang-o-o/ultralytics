@@ -430,6 +430,95 @@ class Segment26(Segment):
             self.proto.fuse()
 
 
+class Segment6D26(Segment26):
+    """YOLO26 Segment + 9×2D control-point head for 6D pose (YOLO6D-style).
+
+    Outputs detection boxes/classes, instance masks, and kpt_shape keypoints (default 9×2:
+    object-frame center + 8 AABB corners projected to the image). 6D pose is recovered at
+    inference via PnP using a 3D mesh and camera intrinsics.
+    """
+
+    def __init__(
+        self,
+        nc: int = 80,
+        nm: int = 32,
+        npr: int = 256,
+        kpt_shape: tuple = (9, 2),
+        reg_max=16,
+        end2end=False,
+        ch: tuple = (),
+    ):
+        """Initialize Segment6D26 with mask and keypoint branches."""
+        super().__init__(nc, nm, npr, reg_max, end2end, ch)
+        self.kpt_shape = tuple(kpt_shape)
+        self.nk = self.kpt_shape[0] * self.kpt_shape[1]
+        c5 = max(ch[0] // 4, self.nk)
+        self.cv5 = nn.ModuleList(nn.Sequential(Conv(x, c5, 3), Conv(c5, c5, 3), nn.Conv2d(c5, self.nk, 1)) for x in ch)
+        if end2end:
+            self.one2one_cv5 = copy.deepcopy(self.cv5)
+
+    @property
+    def one2many(self):
+        """One-to-many heads including mask and pose branches."""
+        return dict(box_head=self.cv2, cls_head=self.cv3, mask_head=self.cv4, pose_head=self.cv5)
+
+    @property
+    def one2one(self):
+        """One-to-one heads including mask and pose branches."""
+        return dict(
+            box_head=self.one2one_cv2,
+            cls_head=self.one2one_cv3,
+            mask_head=self.one2one_cv4,
+            pose_head=self.one2one_cv5,
+        )
+
+    def forward_head(
+        self,
+        x: list[torch.Tensor],
+        box_head: torch.nn.Module,
+        cls_head: torch.nn.Module,
+        mask_head: torch.nn.Module,
+        pose_head: torch.nn.Module = None,
+    ) -> dict[str, torch.Tensor]:
+        """Return boxes, class scores, mask coefficients, and keypoints."""
+        preds = Segment.forward_head(self, x, box_head, cls_head, mask_head)
+        if pose_head is not None:
+            bs = x[0].shape[0]
+            preds["kpts"] = torch.cat([pose_head[i](x[i]).view(bs, self.nk, -1) for i in range(self.nl)], 2)
+        return preds
+
+    def _inference(self, x: dict[str, torch.Tensor]) -> torch.Tensor:
+        """Decode boxes/classes/masks and append decoded keypoints."""
+        preds = Segment._inference(self, x)
+        return torch.cat([preds, self.kpts_decode(x["kpts"])], dim=1)
+
+    def postprocess(self, preds: torch.Tensor) -> torch.Tensor:
+        """Post-process to [xyxy, score, cls, mask_coeffs, kpts]."""
+        boxes, scores, mask_coefficient, kpts = preds.split([4, self.nc, self.nm, self.nk], dim=-1)
+        scores, conf, idx = self.get_topk_index(scores, self.max_det)
+        boxes = boxes.gather(dim=1, index=idx.repeat(1, 1, 4))
+        mask_coefficient = mask_coefficient.gather(dim=1, index=idx.repeat(1, 1, self.nm))
+        kpts = kpts.gather(dim=1, index=idx.repeat(1, 1, self.nk))
+        return torch.cat([boxes, scores, conf, mask_coefficient, kpts], dim=-1)
+
+    def kpts_decode(self, kpts: torch.Tensor) -> torch.Tensor:
+        """Decode keypoints relative to anchors (Pose-style, xy only)."""
+        ndim = self.kpt_shape[1]
+        bs = kpts.shape[0]
+        y = kpts.clone()
+        y = y.view(bs, *self.kpt_shape, -1)
+        y[:, :, :2] = (y[:, :, :2] * 2.0 + (self.anchors - 0.5)) * self.strides
+        if ndim == 3:
+            y[:, :, 2:3] = y[:, :, 2:3].sigmoid()
+        return y.view(bs, self.nk, -1)
+
+    def fuse(self) -> None:
+        """Drop one2many branches for inference."""
+        self.cv2 = self.cv3 = self.cv4 = self.cv5 = None
+        if hasattr(self.proto, "fuse"):
+            self.proto.fuse()
+
+
 class OBB(Detect):
     """YOLO OBB detection head for detection with rotation models.
 

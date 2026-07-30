@@ -153,6 +153,21 @@ runs/
 wandb/
 .DS_Store
 
+# Local pipelines under projects/ (track code; ignore heavy regenerable assets)
+projects/**/.venv/
+projects/**/data/
+projects/**/outputs/
+projects/**/logs/
+projects/**/third_party/*
+!projects/**/third_party/setup.sh
+projects/**/models/*
+!projects/**/models/download.sh
+projects/**/*.ply
+projects/**/*.bin
+# Keep project env pins (root ignores these globally for the library)
+!projects/**/uv.lock
+!projects/**/.python-version
+
 # Neural Network weights -----------------------------------------------------------------------------------------------
 weights/
 *.weights

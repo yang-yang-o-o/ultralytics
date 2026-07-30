@@ -25,6 +25,7 @@ from .augment import (
     DepthFormat,
     Format,
     LetterBox,
+    RandomBackground,
     RandomLoadText,
     SemanticFormat,
     classify_augmentations,
@@ -89,11 +90,14 @@ class YOLODataset(BaseDataset):
             *args (Any): Additional positional arguments for the parent class.
             **kwargs (Any): Additional keyword arguments for the parent class.
         """
-        self.use_segments = task == "segment"
-        self.use_keypoints = task == "pose"
+        self.use_segments = task in {"segment", "seg6d"}
+        self.use_keypoints = task in {"pose", "seg6d"}
         self.use_obb = task == "obb"
+        self.use_seg6d = task == "seg6d"
         self.data = data
-        assert not (self.use_segments and self.use_keypoints), "Can not use both segments and keypoints."
+        assert not (self.use_segments and self.use_keypoints) or self.use_seg6d, (
+            "Can not use both segments and keypoints unless task=seg6d."
+        )
         super().__init__(*args, channels=self.data.get("channels", 3), **kwargs)
 
     def cache_labels(self, path: Path = Path("./labels.cache")) -> dict:
@@ -142,6 +146,45 @@ class YOLODataset(BaseDataset):
         if x["labels"]:
             save_dataset_cache_file(self.prefix, path, x, DATASET_CACHE_VERSION)
         return x
+
+
+    def _load_seg6d_segments(self, im_file: str, n_pose: int) -> list:
+        """Load polygon segments from parallel labels_seg/ for seg6d dual-label layout.
+
+        If polygon count != pose instance count (common when masks split into multiple
+        contours), keep the n_pose largest polygons by AABB area so TAL assignment stays aligned.
+        """
+        seg_dir = self.data.get("labels_seg_dir", "labels_seg")
+        im_path = Path(im_file)
+        # images/train/1.png -> labels_seg/train/1.txt
+        seg_file = im_path.parents[1] / seg_dir / im_path.parent.name / f"{im_path.stem}.txt"
+        if not seg_file.is_file():
+            pose_file = Path(img2label_paths([im_file])[0])
+            parts = list(pose_file.parts)
+            if "labels" in parts:
+                parts[parts.index("labels")] = seg_dir
+                seg_file = Path(*parts)
+        if not seg_file.is_file():
+            LOGGER.warning(f"{self.prefix}seg6d missing segment label: {seg_file}")
+            return []
+        with open(seg_file, encoding="utf-8") as f:
+            lb = [x.split() for x in f.read().strip().splitlines() if len(x)]
+        if not lb:
+            return []
+        segments = [np.array(x[1:], dtype=np.float32).reshape(-1, 2) for x in lb]
+        if len(segments) != n_pose:
+            # Prefer largest components so 1 pose instance still gets one mask
+            areas = [
+                float(np.ptp(s[:, 0]) * np.ptp(s[:, 1])) if len(s) else 0.0 for s in segments
+            ]
+            order = np.argsort(areas)[::-1]
+            if len(segments) > n_pose:
+                segments = [segments[i] for i in order[:n_pose]]
+            else:
+                # fewer segments than poses: pad with empty (should be rare)
+                while len(segments) < n_pose:
+                    segments.append(np.zeros((0, 2), dtype=np.float32))
+        return segments
 
     def get_label_files(self) -> list[str]:
         """Return the companion label files for the dataset's images, storing them on the instance.
@@ -207,6 +250,8 @@ class YOLODataset(BaseDataset):
             (tuple): (label dict or None, missing, found, empty, corrupt, message).
         """
         im_file, lb, shape, segments, keypoint, nm_f, nf_f, ne_f, nc_f, msg = result
+        if im_file and self.use_seg6d:
+            segments = self._load_seg6d_segments(im_file, len(lb))
         label = (
             {
                 "im_file": im_file,
@@ -238,7 +283,7 @@ class YOLODataset(BaseDataset):
                 f"Segment dataset requires equal numbers of boxes and segments, but got len(segments) = "
                 f"{len_segments}, len(boxes) = {len_boxes}. Please supply a segment dataset, not a detect dataset."
             )
-        if len_segments and len_boxes != len_segments:
+        if not self.use_seg6d and len_segments and len_boxes != len_segments:
             LOGGER.warning(
                 f"Box and segment counts should be equal, but got len(segments) = {len_segments}, "
                 f"len(boxes) = {len_boxes}. To resolve this only boxes will be used and all segments will be removed. "
@@ -306,6 +351,15 @@ class YOLODataset(BaseDataset):
         Returns:
             (Compose): Composed transforms.
         """
+        self.bg_transform = None
+        bg_p = float(getattr(hyp, "bg_replace", 0.0) or 0.0) if hyp is not None else 0.0
+        bg_dir = getattr(hyp, "bg_dir", None) if hyp is not None else None
+        if self.augment and bg_p > 0.0 and bg_dir:
+            self.bg_transform = RandomBackground(
+                bg_dir=bg_dir,
+                p=bg_p,
+                mask_dir=getattr(hyp, "bg_mask_dir", None) or None,
+            )
         if self.augment:
             hyp.mosaic = hyp.mosaic if self.augment and not self.rect else 0.0
             hyp.mixup = hyp.mixup if self.augment and not self.rect else 0.0
@@ -327,6 +381,13 @@ class YOLODataset(BaseDataset):
             )
         )
         return transforms
+
+    def get_image_and_label(self, index: int) -> dict:
+        """Load image/label then apply YOLO6D-style random background (train only)."""
+        label = super().get_image_and_label(index)
+        if getattr(self, "bg_transform", None) is not None:
+            label = self.bg_transform(label)
+        return label
 
     def build_text_transforms(self, transforms: Compose, max_samples: int) -> Compose:
         """Insert text augmentation for text-based subclasses providing `category_freq`.

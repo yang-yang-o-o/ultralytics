@@ -69,6 +69,7 @@ from ultralytics.nn.modules import (
     SCDown,
     Segment,
     Segment26,
+    Segment6D26,
     SemanticSegment,
     TorchVision,
     WorldDetect,
@@ -664,6 +665,25 @@ class SegmentationModel(DetectionModel):
     def init_criterion(self):
         """Initialize the loss criterion for the SegmentationModel."""
         return E2ELoss(self, v8SegmentationLoss) if getattr(self, "end2end", False) else v8SegmentationLoss(self)
+
+
+class Seg6DModel(SegmentationModel):
+    """YOLO26 segment + 9×2D control points for 6D pose (PnP at inference)."""
+
+    def __init__(self, cfg="yolo26s-seg6d.yaml", ch=3, nc=None, data_kpt_shape=(None, None), verbose=True):
+        """Initialize Seg6D model, optionally overriding kpt_shape from data yaml."""
+        if not isinstance(cfg, dict):
+            cfg = yaml_model_load(cfg)
+        if any(data_kpt_shape) and list(data_kpt_shape) != list(cfg.get("kpt_shape", (None, None))):
+            LOGGER.info(f"Overriding model.yaml kpt_shape={cfg.get('kpt_shape')} with kpt_shape={data_kpt_shape}")
+            cfg["kpt_shape"] = data_kpt_shape
+        super().__init__(cfg=cfg, ch=ch, nc=nc, verbose=verbose)
+
+    def init_criterion(self):
+        """Initialize combined segmentation + YOLO6D-style keypoint MSE loss."""
+        from ultralytics.utils.loss import Seg6DLoss
+
+        return E2ELoss(self, Seg6DLoss) if getattr(self, "end2end", False) else Seg6DLoss(self)
 
 
 class SemanticSegmentationModel(BaseModel):
@@ -2087,6 +2107,7 @@ def parse_model(d, ch, verbose=True):
                 YOLOEDetect,
                 Segment,
                 Segment26,
+                Segment6D26,
                 YOLOESegment,
                 YOLOESegment26,
                 Pose,
@@ -2096,9 +2117,9 @@ def parse_model(d, ch, verbose=True):
             }
         ):
             args.extend([reg_max, end2end, [ch[x] for x in f]])
-            if m is Segment or m is YOLOESegment or m is Segment26 or m is YOLOESegment26:
+            if m is Segment or m is YOLOESegment or m is Segment26 or m is YOLOESegment26 or m is Segment6D26:
                 args[2] = make_divisible(min(args[2], max_channels) * width, 8)
-            if m in {Detect, YOLOEDetect, Segment, Segment26, YOLOESegment, YOLOESegment26, Pose, Pose26, OBB, OBB26}:
+            if m in {Detect, YOLOEDetect, Segment, Segment26, Segment6D26, YOLOESegment, YOLOESegment26, Pose, Pose26, OBB, OBB26}:
                 m.legacy = legacy
         elif m is Depth:
             args = [*args[:1], [ch[x] for x in f]]  # c_mid, ch tuple; drops the legacy mode arg old checkpoints store
@@ -2194,6 +2215,8 @@ def guess_model_task(model):
             return "detect"
         if "semanticsegment" in m:
             return "semantic"
+        if "segment6d" in m or "seg6d" in m:
+            return "seg6d"
         if "segment" in m:
             return "segment"
         if "pose" in m:
@@ -2218,6 +2241,8 @@ def guess_model_task(model):
         for m in model.modules():
             if isinstance(m, SemanticSegment):
                 return "semantic"
+            elif isinstance(m, Segment6D26):
+                return "seg6d"
             elif isinstance(m, (Segment, YOLOESegment)):
                 return "segment"
             elif isinstance(m, Classify):
@@ -2236,6 +2261,8 @@ def guess_model_task(model):
         model = Path(model)
         if "-sem" in model.stem or "semantic" in model.parts:
             return "semantic"
+        elif "-seg6d" in model.stem or "seg6d" in model.stem:
+            return "seg6d"
         elif "-seg" in model.stem or "segment" in model.parts:
             return "segment"
         elif "-cls" in model.stem or "classify" in model.parts:

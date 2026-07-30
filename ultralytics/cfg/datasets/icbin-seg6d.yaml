@@ -1,0 +1,37 @@
+# IC-BIN (BOP) → seg6d: instance seg + YOLO6D-style 9 control points
+# Prepared by: examples/icbin_seg6d_prepare.py
+# Units: BOP mm (mesh + cam_t). Intrinsics from camera.json / scene_camera.
+
+path: /root/YOLO6D/datasets/bop/icbin/yolo_seg6d
+train: images/train
+val: images/val
+test: images/val
+
+nc: 2
+names:
+  0: obj_1  # Tejani #2 (coffee cup family)
+  1: obj_2  # Tejani #4
+
+# 9 object-frame points: center + 8 AABB corners (YOLO6D order)
+kpt_shape: [9, 2]
+
+# Default camera (IC-BIN); per-frame K may vary slightly — labels used exact scene_camera K.
+width: 640
+height: 480
+fx: 550.0
+fy: 540.0
+u0: 316.0
+v0: 244.0
+
+# Meshes for PnP (BOP mm). mesh_scale=1.0 (beer uses 0.001 for mm→m).
+mesh: /root/YOLO6D/datasets/bop/icbin/models/obj_000001.ply
+mesh_scale: 1.0
+diam: 136.616
+meshes:
+  0: /root/YOLO6D/datasets/bop/icbin/models/obj_000001.ply
+  1: /root/YOLO6D/datasets/bop/icbin/models/obj_000002.ply
+diams:
+  0: 136.616
+  1: 220.640
+
+labels_seg_dir: labels_seg

@@ -1,0 +1,25 @@
+# projects/object_6d_pose_annotation run1/yolo6d_full → seg6d
+# Intrinsics from outputs/run1/export/camera.json (1600×900 export)
+
+path: /root/ultralytics/projects/object_6d_pose_annotation/outputs/run1/yolo6d_full/yolo_seg6d
+train: images/train
+val: images/val
+test: images/val
+
+nc: 1
+names:
+  0: object
+
+kpt_shape: [9, 2]
+
+mesh: /root/ultralytics/projects/object_6d_pose_annotation/outputs/run1/yolo6d_full/object.ply
+mesh_scale: 1.0
+diam: 0.07777377403866251
+width: 1600
+height: 900
+fx: 1438.5626415291558
+fy: 1442.4353793423004
+u0: 800.0
+v0: 450.0
+
+labels_seg_dir: labels_seg

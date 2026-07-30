@@ -17,6 +17,7 @@ from ultralytics.nn.tasks import (
     DetectionModel,
     OBBModel,
     PoseModel,
+    Seg6DModel,
     SegmentationModel,
     SemanticSegmentationModel,
     WorldModel,
@@ -106,6 +107,12 @@ class YOLO(Model):
                 "trainer": yolo.segment.SegmentationTrainer,
                 "validator": yolo.segment.SegmentationValidator,
                 "predictor": yolo.segment.SegmentationPredictor,
+            },
+            "seg6d": {
+                "model": Seg6DModel,
+                "trainer": yolo.seg6d.Seg6DTrainer,
+                "validator": yolo.seg6d.Seg6DValidator,
+                "predictor": yolo.seg6d.Seg6DPredictor,
             },
             "pose": {
                 "model": PoseModel,

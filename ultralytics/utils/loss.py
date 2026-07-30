@@ -648,6 +648,124 @@ class v8SegmentationLoss(v8DetectionLoss):
         return loss / fg_mask.sum()
 
 
+class Seg6DLoss(v8SegmentationLoss):
+    """Segmentation + YOLO6D-style MSE on 9×2D control points (multi-instance via TAL assignment)."""
+
+    def __init__(self, model: torch.nn.Module, tal_topk: int = 10, tal_topk2: int | None = None):
+        """Initialize combined seg + keypoint MSE loss."""
+        super().__init__(model, tal_topk, tal_topk2)
+        self.kpt_shape = model.model[-1].kpt_shape
+        self.nkpt = self.kpt_shape[0]
+
+    def loss(self, preds: dict[str, torch.Tensor], batch: dict[str, torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor]:
+        """Compute det+seg losses then add MSE keypoint location loss (YOLO6D-style)."""
+        pred_masks, proto = preds["mask_coefficient"].permute(0, 2, 1).contiguous(), preds["proto"]
+        pred_kpts = preds["kpts"].permute(0, 2, 1).contiguous()
+        loss = torch.zeros(6, device=self.device)  # box, seg, cls, dfl, semantic, kpt
+        if isinstance(proto, tuple) and len(proto) == 2:
+            proto, pred_semantic = proto
+        else:
+            pred_semantic = None
+        (fg_mask, target_gt_idx, target_bboxes, anchor_points, stride_tensor), det_loss, _ = (
+            self.get_assigned_targets_and_loss(preds, batch)
+        )
+        loss[0], loss[2], loss[3] = det_loss[0], det_loss[1], det_loss[2]
+
+        batch_size, _, mask_h, mask_w = proto.shape
+        imgsz = torch.tensor(preds["feats"][0].shape[2:], device=self.device, dtype=pred_masks.dtype) * self.stride[0]
+
+        if fg_mask.sum():
+            masks = batch["masks"].to(self.device).float()
+            if tuple(masks.shape[-2:]) != (mask_h, mask_w):
+                proto = F.interpolate(proto, masks.shape[-2:], mode="bilinear", align_corners=False)
+            loss[1] = self.calculate_segmentation_loss(
+                fg_mask,
+                masks,
+                target_gt_idx,
+                target_bboxes,
+                batch["batch_idx"].view(-1, 1),
+                proto,
+                pred_masks,
+                imgsz,
+            )
+            if pred_semantic is not None:
+                sem_idx = batch["sem_masks"].to(self.device).long().unsqueeze(1)
+                if self.overlap:
+                    present = masks != 0
+                else:
+                    batch_idx = batch["batch_idx"].view(-1)
+                    present = torch.ones(batch_size, *masks.shape[-2:], dtype=torch.bool, device=self.device)
+                    for i in range(batch_size):
+                        instance_mask_i = masks[batch_idx == i]
+                        if len(instance_mask_i):
+                            present[i] = instance_mask_i.sum(dim=0) != 0
+                sem_masks = torch.zeros(sem_idx.shape[0], self.nc, *sem_idx.shape[2:], device=self.device)
+                sem_masks.scatter_(1, sem_idx, present.unsqueeze(1).float())
+                loss[4] = self.bcedice_loss(pred_semantic, sem_masks) * self.hyp.box
+
+            # Decode kpts to grid space (same as v8PoseLoss), MSE vs GT / stride
+            pk = pred_kpts.view(batch_size, -1, *self.kpt_shape).clone()
+            pk[..., :2] *= 2.0
+            pk[..., 0] += anchor_points[:, [0]] - 0.5
+            pk[..., 1] += anchor_points[:, [1]] - 0.5
+
+            keypoints = batch["keypoints"].to(self.device).float().clone()
+            keypoints[..., 0] *= imgsz[1]
+            keypoints[..., 1] *= imgsz[0]
+            selected = self._select_target_keypoints(
+                keypoints, batch["batch_idx"].view(-1, 1), target_gt_idx, fg_mask
+            )
+            selected[..., :2] /= stride_tensor.view(1, -1, 1, 1)
+
+            pk_fg = pk[..., :2][fg_mask]
+            tk_fg = selected[..., :2][fg_mask]
+            kpt_mask = selected[..., 2][fg_mask] if selected.shape[-1] == 3 else torch.ones_like(tk_fg[..., 0])
+            kpt_mask = kpt_mask.unsqueeze(-1)
+            loss[5] = (((pk_fg - tk_fg) ** 2) * kpt_mask).sum() / (kpt_mask.sum() * 2 + 1e-9)
+        else:
+            loss[1] += (proto * 0).sum() + (pred_masks * 0).sum()
+            loss[5] += (pred_kpts * 0).sum()
+            if pred_semantic is not None:
+                loss[4] += (pred_semantic * 0).sum()
+
+        loss[1] *= self.hyp.box
+        # Pose curriculum: zero pose gain for the first pose_warmup_epochs (det+seg only), then apply pose gain.
+        pose_w = getattr(self.hyp, "pose_active", None)
+        if pose_w is None:
+            pose_w = float(getattr(self.hyp, "pose", 12.0))
+            warm = int(getattr(self.hyp, "pose_warmup_epochs", 0) or 0)
+            epoch = int(getattr(self.hyp, "epoch", 10**9))
+            if warm and epoch < warm:
+                pose_w = 0.0
+        loss[5] *= float(pose_w)
+        return loss * batch_size, loss.detach()
+
+    def _select_target_keypoints(
+        self,
+        keypoints: torch.Tensor,
+        batch_idx: torch.Tensor,
+        target_gt_idx: torch.Tensor,
+        masks: torch.Tensor,
+    ) -> torch.Tensor:
+        """Gather GT keypoints for each positive anchor (same logic as v8PoseLoss)."""
+        batch_idx = batch_idx.flatten()
+        batch_size = len(masks)
+        max_kpts = torch.unique(batch_idx, return_counts=True)[1].max()
+        batched_keypoints = torch.zeros(
+            (batch_size, max_kpts, keypoints.shape[1], keypoints.shape[2]), device=keypoints.device
+        )
+        batch_idx_long = batch_idx.long()
+        offsets = torch.zeros(batch_size + 1, dtype=torch.long, device=keypoints.device)
+        offsets.scatter_add_(0, batch_idx_long + 1, torch.ones_like(batch_idx_long))
+        offsets = offsets.cumsum(0)
+        within_idx = torch.arange(len(batch_idx), device=keypoints.device) - offsets[batch_idx_long]
+        batched_keypoints[batch_idx_long, within_idx] = keypoints
+        target_gt_idx_expanded = target_gt_idx.unsqueeze(-1).unsqueeze(-1)
+        return batched_keypoints.gather(
+            1, target_gt_idx_expanded.expand(-1, -1, keypoints.shape[1], keypoints.shape[2])
+        )
+
+
 class v8PoseLoss(v8DetectionLoss):
     """Criterion class for computing training losses for YOLOv8 pose estimation."""
 
