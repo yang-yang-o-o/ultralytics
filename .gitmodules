@@ -1,0 +1,3 @@
+[submodule "projects/object_6d_pose_annotation"]
+	path = projects/object_6d_pose_annotation
+	url = https://github.com/yang-yang-o-o/object_6d_pose_annotation.git
