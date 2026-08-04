@@ -656,8 +656,11 @@ class Seg6DLoss(v8SegmentationLoss):
         super().__init__(model, tal_topk, tal_topk2)
         self.kpt_shape = model.model[-1].kpt_shape
         self.nkpt = self.kpt_shape[0]
+        self.loss_names = ("box_loss", "seg_loss", "cls_loss", "dfl_loss", "sem_loss", "kpt_loss")
 
-    def loss(self, preds: dict[str, torch.Tensor], batch: dict[str, torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor]:
+    def loss(
+        self, preds: dict[str, torch.Tensor], batch: dict[str, torch.Tensor]
+    ) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
         """Compute det+seg losses then add MSE keypoint location loss (YOLO6D-style)."""
         pred_masks, proto = preds["mask_coefficient"].permute(0, 2, 1).contiguous(), preds["proto"]
         pred_kpts = preds["kpts"].permute(0, 2, 1).contiguous()
@@ -738,7 +741,7 @@ class Seg6DLoss(v8SegmentationLoss):
             if warm and epoch < warm:
                 pose_w = 0.0
         loss[5] *= float(pose_w)
-        return loss * batch_size, loss.detach()
+        return loss * batch_size, dict(zip(self.loss_names, loss.detach()))
 
     def _select_target_keypoints(
         self,
