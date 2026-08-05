@@ -24,7 +24,7 @@ import numpy as np
 
 ROOT = Path("/root/ultralytics")
 BOP_TOOLKIT = Path("/root/bop_toolkit")
-BOP_DATASETS = Path("/root/YOLO6D/datasets/bop")
+BOP_DATASETS = Path("/root/ultralytics/YOLO6D/datasets/bop")
 ICBIN = BOP_DATASETS / "icbin"
 DEFAULT_RESULTS = ROOT / "runs" / "segment" / "icbin-seg" / "icbin-seg6d-smoke" / "bop_results"
 DEFAULT_EVAL = ROOT / "runs" / "segment" / "icbin-seg" / "icbin-seg6d-smoke" / "bop_eval"

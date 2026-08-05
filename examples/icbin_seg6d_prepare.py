@@ -238,7 +238,7 @@ def main() -> None:
     parser.add_argument(
         "--bop-root",
         type=Path,
-        default=Path("/root/YOLO6D/datasets/bop/icbin"),
+        default=Path("/root/ultralytics/YOLO6D/datasets/bop/icbin"),
         help="Extracted IC-BIN root (models/, train/, test/)",
     )
     parser.add_argument(

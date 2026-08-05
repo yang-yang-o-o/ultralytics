@@ -2,7 +2,7 @@
 # Prepared by: examples/icbin_seg6d_prepare.py
 # Units: BOP mm (mesh + cam_t). Intrinsics from camera.json / scene_camera.
 
-path: /root/YOLO6D/datasets/bop/icbin/yolo_seg6d
+path: /root/ultralytics/YOLO6D/datasets/bop/icbin/yolo_seg6d
 train: images/train
 val: images/val
 test: images/val
@@ -24,12 +24,12 @@ u0: 316.0
 v0: 244.0
 
 # Meshes for PnP (BOP mm). mesh_scale=1.0 (beer uses 0.001 for mm→m).
-mesh: /root/YOLO6D/datasets/bop/icbin/models/obj_000001.ply
+mesh: /root/ultralytics/YOLO6D/datasets/bop/icbin/models/obj_000001.ply
 mesh_scale: 1.0
 diam: 136.616
 meshes:
-  0: /root/YOLO6D/datasets/bop/icbin/models/obj_000001.ply
-  1: /root/YOLO6D/datasets/bop/icbin/models/obj_000002.ply
+  0: /root/ultralytics/YOLO6D/datasets/bop/icbin/models/obj_000001.ply
+  1: /root/ultralytics/YOLO6D/datasets/bop/icbin/models/obj_000002.ply
 diams:
   0: 136.616
   1: 220.640

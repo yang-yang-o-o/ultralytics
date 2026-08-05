@@ -1,7 +1,7 @@
 # Beer bottle instance segmentation + YOLO6D-style 9 control points (seg6d)
 # 3D mesh / PnP: follow YOLO6D test.py (beer.ply + beer.data intrinsics)
 
-path: /root/YOLO6D/data/beer/yolo_seg6d
+path: /root/ultralytics/YOLO6D/data/beer/yolo_seg6d
 train: images/train
 val: images/val
 test: images/val
@@ -14,7 +14,7 @@ names:
 kpt_shape: [9, 2]
 
 # Camera / mesh for PnP evaluation (absolute paths)
-mesh: /root/YOLO6D/data/beer/beer.ply
+mesh: /root/ultralytics/YOLO6D/data/beer/beer.ply
 diam: 0.1804993074
 width: 1292
 height: 964

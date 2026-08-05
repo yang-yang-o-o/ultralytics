@@ -62,7 +62,7 @@ def link(src: Path, dst: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", type=Path, default=Path("/root/YOLO6D/data/beer"))
+    parser.add_argument("--root", type=Path, default=Path("/root/ultralytics/YOLO6D/data/beer"))
     args = parser.parse_args()
     root: Path = args.root
     out = root / "yolo_seg6d"

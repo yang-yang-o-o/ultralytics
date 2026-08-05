@@ -2,7 +2,7 @@
   "id": "beer-yolo26n-seg-2026-07-18",
   "title": "YOLO6D beer → YOLO26 seg6d + IC-BIN BOP",
   "created_at": "2026-07-18T16:09:00+08:00",
-  "updated_at": "2026-08-04T22:47:00+08:00",
+  "updated_at": "2026-08-05T21:23:00+08:00",
   "status": "beer_best_stable__icbin_pbr25_paused_ep8__yolo6d_full_repro_ready",
   "docs": {
     "session": "SESSION.md",
@@ -41,8 +41,8 @@
     "doc": "BEST_CONFIG.md"
   },
   "icbin": {
-    "data_root": "/root/YOLO6D/datasets/bop/icbin",
-    "yolo_root": "/root/YOLO6D/datasets/bop/icbin/yolo_seg6d",
+    "data_root": "/root/ultralytics/YOLO6D/datasets/bop/icbin",
+    "yolo_root": "/root/ultralytics/YOLO6D/datasets/bop/icbin/yolo_seg6d",
     "pbr_scenes_extracted": 25,
     "pbr_train_images": 24975,
     "runs": {

@@ -31,7 +31,7 @@ EDGES = (
 )
 
 RUN = Path("/root/ultralytics/runs/segment/beer-seg/yolo26s-seg-6dpose-v2")
-SOURCE = Path("/root/YOLO6D/data/beer/yolo_seg6d/images/val")
+SOURCE = Path("/root/ultralytics/YOLO6D/data/beer/yolo_seg6d/images/val")
 DATA_YAML = Path("/root/ultralytics/ultralytics/cfg/datasets/beer-seg6d.yaml")
 IMGSZ = 1312
 

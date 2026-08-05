@@ -12,7 +12,7 @@ from ultralytics import YOLO
 RUN = Path("runs/segment/beer-seg/yolo26s-seg-imgsz960-mr2")
 # Native beer images are 1292x964; use stride-aligned size >= long side
 IMGSZ = 1312
-SOURCE = Path("/root/YOLO6D/data/beer/yolo_seg/images/val")
+SOURCE = Path("/root/ultralytics/YOLO6D/data/beer/yolo_seg/images/val")
 OUT_NAME = "predict-val-native-retina"
 
 

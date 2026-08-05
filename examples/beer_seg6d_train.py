@@ -21,8 +21,8 @@ from ultralytics import YOLO
 ROOT = Path("/root/ultralytics")
 DEFAULT_WEIGHTS = ROOT / "yolo26s-seg.pt"
 DEFAULT_PROJECT = ROOT / "runs" / "segment" / "beer-seg"
-DEFAULT_BG_DIR = Path("/root/YOLO6D/VOCdevkit/VOC2012/JPEGImages")
-DEFAULT_BG_MASK_DIR = Path("/root/YOLO6D/data/beer/mask")
+DEFAULT_BG_DIR = Path("/root/ultralytics/YOLO6D/VOCdevkit/VOC2012/JPEGImages")
+DEFAULT_BG_MASK_DIR = Path("/root/ultralytics/YOLO6D/data/beer/mask")
 MODEL_YAML = "yolo26s-seg6d.yaml"
 DATA = "beer-seg6d.yaml"
 

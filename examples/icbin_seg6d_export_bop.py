@@ -53,7 +53,7 @@ def main() -> None:
     parser.add_argument(
         "--bop-root",
         type=Path,
-        default=Path("/root/YOLO6D/datasets/bop/icbin"),
+        default=Path("/root/ultralytics/YOLO6D/datasets/bop/icbin"),
         help="IC-BIN root with test/ scenes",
     )
     parser.add_argument("--split", default="test", help="BOP split folder name")

@@ -2,7 +2,7 @@
 # Beer bottle instance segmentation (from YOLO6D/data/beer masks)
 
 # Dataset root (absolute path recommended)
-path: /root/YOLO6D/data/beer/yolo_seg
+path: /root/ultralytics/YOLO6D/data/beer/yolo_seg
 train: images/train # 1470 images
 val: images/val # 30 images (original YOLO6D test split)
 test: images/val

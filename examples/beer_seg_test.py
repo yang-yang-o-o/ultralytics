@@ -26,7 +26,7 @@ def main() -> None:
     print(f"seg mAP50-95: {metrics.seg.map:.4f}")
     print(f"seg mAP50:    {metrics.seg.map50:.4f}")
 
-    pred_dir = Path("/root/YOLO6D/data/beer/yolo_seg/images/val")
+    pred_dir = Path("/root/ultralytics/YOLO6D/data/beer/yolo_seg/images/val")
     model.predict(
         source=str(pred_dir),
         imgsz=IMGSZ,

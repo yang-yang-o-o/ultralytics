@@ -172,7 +172,7 @@ def viz_one(
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--bop-root", type=Path, default=Path("/root/YOLO6D/datasets/bop/icbin"))
+    parser.add_argument("--bop-root", type=Path, default=Path("/root/ultralytics/YOLO6D/datasets/bop/icbin"))
     parser.add_argument("--yolo-root", type=Path, default=None)
     parser.add_argument("--out-dir", type=Path, default=None)
     parser.add_argument("--n-train", type=int, default=4)

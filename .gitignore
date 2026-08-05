@@ -226,3 +226,8 @@ results.csv
 fuzz-sources/
 fuzz-datasets/
 fuzz-models/
+
+# Local project data (not part of the installable package)
+YOLO6D/
+data_extract/
+!data_extract/README.md

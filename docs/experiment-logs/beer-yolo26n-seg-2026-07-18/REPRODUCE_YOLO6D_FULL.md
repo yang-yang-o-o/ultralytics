@@ -118,19 +118,28 @@ git -C projects/object_6d_pose_annotation rev-parse --short HEAD
 
 ---
 
-## 4. 解压用户数据包并落到硬编码路径
+## 4. 解压用户数据包并落到项目内路径
+
+**所有大数据目录都属于仓库根下的同一项目**，不要再放到 `/root/YOLO6D` 或 `/root/data_extract`：
+
+| 目录 | 路径 | 角色 |
+|------|------|------|
+| 解压暂存 | `/root/ultralytics/data_extract/` | zip/rar 解压落点（可保留或事后清空） |
+| 外部数据根 | `/root/ultralytics/YOLO6D/` | VOC（及日后 beer/BOP 等） |
+| 绕拍/标注 | `/root/ultralytics/projects/object_6d_pose_annotation/` | `data/` + `outputs/` |
 
 脚本与 yaml **写死了绝对路径**，必须落到下表，不要随意改名。
 
-### 4.1 解压
+### 4.1 解压到 `data_extract`
 
 ```bash
-mkdir -p /root/_extract
-unzip -q /root/ultralytics_backup_takeaway.zip -d /root/_extract
-unrar x -o+ /root/VOCdevkit.rar /root/_extract/
+cd /root/ultralytics
+mkdir -p data_extract YOLO6D
+unzip -q /root/ultralytics_backup_takeaway.zip -d data_extract
+unrar x -o+ /root/VOCdevkit.rar data_extract/
 ```
 
-备份 zip 顶层结构（`ultralytics_backup_takeaway/`）：
+备份 zip 顶层结构（`data_extract/ultralytics_backup_takeaway/`）：
 
 ```
 README.txt
@@ -141,43 +150,45 @@ object_6d_pose_annotation/
 runs/                    # 历史训练/预测（可选恢复；含测试视频）
 ```
 
-### 4.2 放置到期望路径
+### 4.2 整理进 `YOLO6D/` 与 `projects/`
 
 ```bash
-# VOC → 训练脚本 DEFAULT_BG_DIR
-mkdir -p /root/YOLO6D
-rm -rf /root/YOLO6D/VOCdevkit
-mv /root/_extract/VOCdevkit /root/YOLO6D/
+cd /root/ultralytics
+
+# VOC → 训练脚本 DEFAULT_BG_DIR（/root/ultralytics/YOLO6D/...）
+rm -rf YOLO6D/VOCdevkit
+mv data_extract/VOCdevkit YOLO6D/
 
 # 子项目 data/outputs（覆盖 submodule 里空的 gitignore 目录）
-PROJ=/root/ultralytics/projects/object_6d_pose_annotation
+PROJ=projects/object_6d_pose_annotation
 rm -rf "$PROJ/data" "$PROJ/outputs"
-mv /root/_extract/ultralytics_backup_takeaway/object_6d_pose_annotation/data "$PROJ/"
-mv /root/_extract/ultralytics_backup_takeaway/object_6d_pose_annotation/outputs "$PROJ/"
+mv data_extract/ultralytics_backup_takeaway/object_6d_pose_annotation/data "$PROJ/"
+mv data_extract/ultralytics_backup_takeaway/object_6d_pose_annotation/outputs "$PROJ/"
 
 # 预训练权重到仓库根（train 默认 /root/ultralytics/yolo26s-seg.pt）
-cp -a /root/_extract/ultralytics_backup_takeaway/weights/*.pt /root/ultralytics/
+cp -a data_extract/ultralytics_backup_takeaway/weights/*.pt .
 
 # 历史 runs（含测试视频 VID_*.mp4；可选但推理视频步骤需要）
-rm -rf /root/ultralytics/runs
-mv /root/_extract/ultralytics_backup_takeaway/runs /root/ultralytics/
+rm -rf runs
+mv data_extract/ultralytics_backup_takeaway/runs .
 
-# 清理临时解压（可选）
-rm -rf /root/_extract
+# data_extract 可留作备份，或清空省盘（保留 README）
+# rm -rf data_extract/VOCdevkit data_extract/ultralytics_backup_takeaway
 ```
 
 ### 4.3 路径核对清单
 
 | 路径 | 期望 |
 |------|------|
-| `/root/YOLO6D/VOCdevkit/VOC2012/JPEGImages/` | ≥17000 张 jpg |
+| `/root/ultralytics/data_extract/` | 解压暂存（可空，但目录应存在；见 `data_extract/README.md`） |
+| `/root/ultralytics/YOLO6D/VOCdevkit/VOC2012/JPEGImages/` | ≥17000 张 jpg |
 | `/root/ultralytics/yolo26s-seg.pt` | 存在（~23MB） |
 | `.../outputs/run1/yolo6d_full/{rgb,mask,labels}/` | 各约 1097 文件 |
 | `.../outputs/run1/yolo6d_full/{train,test}.txt` | 存在 |
 | `ultralytics/cfg/datasets/yolo6d-full-seg6d.yaml` | `path`/`mesh`/`fx` 等指向上述 `yolo6d_full` |
 
 ```bash
-ls /root/YOLO6D/VOCdevkit/VOC2012/JPEGImages | wc -l   # → 17125
+ls /root/ultralytics/YOLO6D/VOCdevkit/VOC2012/JPEGImages | wc -l   # → 17125
 ls /root/ultralytics/yolo26s-seg.pt
 ls /root/ultralytics/projects/object_6d_pose_annotation/outputs/run1/yolo6d_full/rgb | wc -l
 ```
@@ -319,7 +330,7 @@ cd /root/ultralytics
   --pose 24 --pose-warmup-epochs 0 \
   --close-mosaic 0 --patience 1 \
   --bg-replace 1.0 \
-  --bg-dir /root/YOLO6D/VOCdevkit/VOC2012/JPEGImages \
+  --bg-dir /root/ultralytics/YOLO6D/VOCdevkit/VOC2012/JPEGImages \
   --bg-mask-dir /root/ultralytics/projects/object_6d_pose_annotation/outputs/run1/yolo6d_full/mask
 ```
 
@@ -360,7 +371,7 @@ nohup .venv/bin/python examples/yolo6d_full_seg6d_train.py \
   --pose 24 --pose-warmup-epochs 15 \
   --close-mosaic 20 --patience 60 \
   --bg-replace 1.0 \
-  --bg-dir /root/YOLO6D/VOCdevkit/VOC2012/JPEGImages \
+  --bg-dir /root/ultralytics/YOLO6D/VOCdevkit/VOC2012/JPEGImages \
   --bg-mask-dir /root/ultralytics/projects/object_6d_pose_annotation/outputs/run1/yolo6d_full/mask \
   > /tmp/yolo6d_full_ep100.log 2>&1 &
 
@@ -493,9 +504,10 @@ ln -sf "$(pwd)/$PREV/VID_20260726_230213.mp4" "$RUN/" 2>/dev/null || true
 |------|------|
 | 仓库 | `/root/ultralytics` |
 | venv | `/root/ultralytics/.venv` |
-| 用户 zip | `/root/ultralytics_backup_takeaway.zip` |
-| 用户 rar | `/root/VOCdevkit.rar` |
-| VOC | `/root/YOLO6D/VOCdevkit/VOC2012/JPEGImages` |
+| 用户 zip | `/root/ultralytics_backup_takeaway.zip`（人工放入；不入库） |
+| 用户 rar | `/root/VOCdevkit.rar`（人工放入；不入库） |
+| 解压暂存 | `/root/ultralytics/data_extract/` |
+| VOC | `/root/ultralytics/YOLO6D/VOCdevkit/VOC2012/JPEGImages` |
 | 6D 数据根 | `.../projects/object_6d_pose_annotation/outputs/run1/yolo6d_full` |
 | data yaml | `ultralytics/cfg/datasets/yolo6d-full-seg6d.yaml` |
 | 训练脚本 | `examples/yolo6d_full_seg6d_train.py` |
@@ -515,7 +527,8 @@ ln -sf "$(pwd)/$PREV/VID_20260726_230213.mp4" "$RUN/" 2>/dev/null || true
 | `libGL.so.1` | 装 `libgl1` 或用 `opencv-python-headless` |
 | `tloss.values` / sparse layout | §6 `Seg6DLoss` → dict |
 | `yolo_seg6d/images` 为空 | §7 重跑 prepare（symlink） |
-| `--bg-dir not found` | 确认 VOC 在 `/root/YOLO6D/VOCdevkit/...` |
+| `--bg-dir not found` | 确认 VOC 在 `/root/ultralytics/YOLO6D/VOCdevkit/...`（勿再用 `/root/YOLO6D`） |
+| 误用旧路径 `/root/YOLO6D` 或 `/root/data_extract` | 一律改为仓库内 `ultralytics/YOLO6D`、`ultralytics/data_extract` |
 | PnP 指标全无 / warning trimesh | `uv pip install trimesh` |
 | val 绘图线程 `x1 >= x0` | 冒烟阶段可忽略；不影响权重保存 |
 | OOM | 降 `batch`（8→4）或 `imgsz`；BEST 用 batch=8 |
@@ -531,7 +544,7 @@ ln -sf "$(pwd)/$PREV/VID_20260726_230213.mp4" "$RUN/" 2>/dev/null || true
 1. [ ] `ls` 检查两压缩包；缺失 → **只提醒用户提供，不往下做**  
 2. [ ] 装系统依赖 + `uv` + 设置 `UV_INDEX_URL`  
 3. [ ] `git clone -b dev` + `submodule update --init --recursive`  
-4. [ ] 解压并 mv/cp 到 §4 路径；核对 VOC 张数与 `yolo26s-seg.pt`  
+4. [ ] 解压到 `ultralytics/data_extract`，整理进 `YOLO6D/` 与 `projects/`；核对 VOC 张数与 `yolo26s-seg.pt`  
 5. [ ] `uv venv` + torch/torchvision + `pip install -e .` + `trimesh`  
 6. [ ] 检查/打上 `Seg6DLoss` dict 补丁  
 7. [ ] `yolo6d_full_seg6d_prepare.py` → train=987 val=110  
@@ -549,6 +562,7 @@ ln -sf "$(pwd)/$PREV/VID_20260726_230213.mp4" "$RUN/" 2>/dev/null || true
 |------|------|
 | 2026-08-02 | 初版：基于当日从零搭建会话；两用户包 + 清华源 + Seg6DLoss dict 补丁 + 100ep/val/视频实测指标 |
 | 2026-08-04 | 写入本实验日志目录，供新环境/新对话复现 |
+| 2026-08-05 | 数据目录收拢进仓库：`/root/ultralytics/{data_extract,YOLO6D}`；废弃 `/root/YOLO6D` 与 `/root/data_extract` |
 
 ---
 
@@ -570,7 +584,7 @@ cd /root/ultralytics
   --pose 24 --pose-warmup-epochs 15 \
   --close-mosaic 20 --patience 60 \
   --bg-replace 1.0 \
-  --bg-dir /root/YOLO6D/VOCdevkit/VOC2012/JPEGImages \
+  --bg-dir /root/ultralytics/YOLO6D/VOCdevkit/VOC2012/JPEGImages \
   --bg-mask-dir /root/ultralytics/projects/object_6d_pose_annotation/outputs/run1/yolo6d_full/mask
 
 # val + 图 + 视频

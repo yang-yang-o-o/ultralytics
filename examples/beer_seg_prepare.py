@@ -69,7 +69,7 @@ def build_yolo_layout(root: Path, labels_dir: Path) -> tuple[int, int]:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", type=Path, default=Path("/root/YOLO6D/data/beer"))
+    parser.add_argument("--root", type=Path, default=Path("/root/ultralytics/YOLO6D/data/beer"))
     parser.add_argument("--epsilon-ratio", type=float, default=0.0005,
                         help="approxPolyDP epsilon / perimeter; smaller = denser polygons")
     args = parser.parse_args()
