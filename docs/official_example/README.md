@@ -14,8 +14,8 @@
 | [04-depth-tta.md](04-depth-tta.md) | Depth TTA + log-LS 本地实现与消融 |
 | [05-known-gaps.md](05-known-gaps.md) | 未对齐项、不可复现原因 |
 | [06-reproduce.md](06-reproduce.md) | 新环境端到端复现清单 |
-| [07-code-changes.md](07-code-changes.md) | 相对 upstream main 的本地代码改动 |
-| [patches/depth-tta-logls.patch](patches/depth-tta-logls.patch) | Depth TTA + log-LS 可应用补丁 |
+| [07-code-changes.md](07-code-changes.md) | 相对 upstream main 的本地代码改动（已合入本分支） |
+| [08-results-video.md](08-results-video.md) | 定性 MP4 生成流程与脚本 |
 
 ## 起因
 
@@ -51,6 +51,16 @@
 
 **一句话**：凡官方给出「开源可复现命令」的任务，本地均可对齐；Depth 表头与 OBB test 依赖未开源协议 / 未公开 GT，本地无法完全对齐。
 
+## 定性总览视频
+
+各任务对齐指标后的效果串成一段回顾片（标题总表 → Detect / Seg / Pose / Semantic / Classify / Depth / OBB）：
+
+- 成品示例：[`yolo26n_official_val_results.mp4`](yolo26n_official_val_results.mp4)
+- **如何重新生成**：[08-results-video.md](08-results-video.md)
+- 脚本：[`scripts/render_clean_batches.py`](scripts/render_clean_batches.py)、[`scripts/make_results_video.py`](scripts/make_results_video.py)
+
+Detect / Segment / OBB：框上无文字 label，左侧色块图例与框颜色对应。
+
 ## 关键路径
 
 ```
@@ -64,5 +74,5 @@
 
 ## 建议阅读顺序
 
-新环境复现 → 先读 [06-reproduce.md](06-reproduce.md)，细节回查 01–05、07。  
+新环境复现 → 先读 [06-reproduce.md](06-reproduce.md)，出片看 [08-results-video.md](08-results-video.md)，细节回查 01–05、07。  
 只关心结论 → 本页总表 + [05-known-gaps.md](05-known-gaps.md)。

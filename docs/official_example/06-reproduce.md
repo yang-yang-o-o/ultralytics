@@ -5,15 +5,12 @@
 ## A. 代码与环境
 
 ```bash
-git clone https://github.com/yang-yang-o-o/ultralytics.git
+git clone -b official_example git@github.com:yang-yang-o-o/ultralytics.git
 cd ultralytics
-git fetch origin main
-git checkout -B official_example origin/main
+# 或：git clone … && git checkout official_example
+# Depth TTA 已在分支内，无需 patch
 
-# 若需要 Depth TTA 近似：应用与本实验相同的 3 文件改动
-# （见 07-code-changes.md，或从保留该 diff 的分支/补丁打入）
-
-apt-get install -y git libgl1 aria2 unzip   # 按需
+apt-get install -y git libgl1 aria2 unzip ffmpeg   # 按需；ffmpeg 用于视频 H.264
 uv venv .venv && source .venv/bin/activate
 uv pip install -e ".[dev]"
 ```
@@ -65,7 +62,7 @@ yolo depth val model=yolo26n-depth.pt data=nyu-depth.yaml device=0 imgsz=768 aug
 | Semantic | mIoU ≈ **0.783** |
 | Classify | top1≈**0.714**，top5≈**0.901** |
 | OBB val | 有合理 mAP（本机 ~0.44）；**不**要求等于 52.4 |
-| Depth TTA | 若启用补丁，δ1 升至 ~0.84；**不**要求 0.882 |
+| Depth TTA | 本分支已含改动：`augment=True` 时 δ1 升至 ~0.84；**不**要求 0.882 |
 
 容差来自浮点 / 驱动 / 依赖版本；数量级与官方一致即可。
 
@@ -83,3 +80,12 @@ mkdir -p runs/official_val
 - 只留 val；Cityscapes/ImageNet 解压后删 zip  
 - Pose 不复制图，只软链  
 - 不下载 ADE20K / KITTI 等旁路集（除非要扩实验）
+
+## G. 生成定性 MP4
+
+全量 val 通过后，按 [08-results-video.md](08-results-video.md)：
+
+```bash
+python docs/official_example/scripts/render_clean_batches.py
+python docs/official_example/scripts/make_results_video.py
+```

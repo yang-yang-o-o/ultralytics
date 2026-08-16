@@ -38,7 +38,7 @@
 | HF aria2 403 | resolve URL 二次跳转丢 query | 先 HEAD 取签名 CDN |
 | Classify 无 train | `FileNotFoundError` | `ln -sfn val train` |
 | `pgrep` 误杀脚本 | 等待下载时匹配到自身 | 用更精确的进程匹配 |
-| Depth/OBB `augment` | OBB 不支持；Depth 需本地补丁 | 见 04、07 |
+| Depth/OBB `augment` | OBB 不支持；Depth TTA 已在本分支 | 见 04、07 |
 
 ### 4. 未跑 / 未深挖
 

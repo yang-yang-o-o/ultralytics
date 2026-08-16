@@ -1917,9 +1917,9 @@ class DepthMetrics(SimpleClass, DataExportMixin):
             min_depth (float): Minimum valid depth in meters; pixels with gt <= min_depth are ignored.
             max_depth (float): Maximum valid depth in meters; pixels with gt >= max_depth are ignored and predictions
                 are clamped to it.
-            align (str): Per-image scale alignment before scoring, following the Depth Anything eval protocol. "median"
-                rescales each prediction by median(gt)/median(pred) so affine-invariant (scale-ambiguous) outputs are
-                comparable to metric GT; "none" disables alignment and scores predictions in their raw output scale.
+            align (str): Per-image scale alignment before scoring. "median" rescales each prediction by
+                median(gt)/median(pred); "log_ls" fits the per-image log-affine map ``d' = exp(a·log d + b)`` used by
+                YOLO26 headline NYU/iBims/ETH3D numbers; "none" scores raw predictions without alignment.
         """
         self.min_depth = min_depth
         self.max_depth = max_depth
@@ -1947,11 +1947,22 @@ class DepthMetrics(SimpleClass, DataExportMixin):
                 continue
             pv = pi[mask].float()
             gv = gi[mask].float()
+            finite = torch.isfinite(pv) & torch.isfinite(gv) & (pv > self.min_depth)
+            if not finite.any():
+                continue
+            pv, gv = pv[finite], gv[finite]
             if self.align == "median":
-                finite = torch.isfinite(pv)
-                if finite.any():
-                    scale = torch.median(gv[finite]) / torch.median(pv[finite].clamp_min(self.min_depth))
-                    pv = pv * scale
+                scale = torch.median(gv) / torch.median(pv.clamp_min(self.min_depth))
+                pv = pv * scale
+            elif self.align == "log_ls":
+                # Closed-form fit of log(gt) ≈ a·log(pred) + b, then d' = exp(a·log d + b).
+                lp = torch.log(pv.clamp_min(self.min_depth))
+                lg = torch.log(gv.clamp_min(self.min_depth))
+                ones = torch.ones_like(lp)
+                sol = torch.linalg.lstsq(torch.stack((lp, ones), dim=1), lg.unsqueeze(1)).solution.squeeze(1)
+                a, b = sol[0], sol[1]
+                if torch.isfinite(a) and torch.isfinite(b):
+                    pv = torch.exp(a * lp + b)
             pv = torch.nan_to_num(pv, nan=self.max_depth, posinf=self.max_depth, neginf=self.min_depth).clamp(
                 self.min_depth, self.max_depth
             )

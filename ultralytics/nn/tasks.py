@@ -790,6 +790,35 @@ class DepthModel(DetectionModel):
         """Initialize YOLO Depth model."""
         super().__init__(cfg=cfg, ch=ch, nc=nc, verbose=verbose)
 
+    def _predict_augment(self, x):
+        """Multi-scale + horizontal-flip TTA for dense depth maps.
+
+        Averages predictions over scales ``[0.75, 1.0, 1.25]`` and left-right flips. Each view is resized back to the
+        single-scale output resolution before averaging. Pair with ``DepthMetrics(align="log_ls")`` to approximate the
+        YOLO26 headline NYU protocol.
+        """
+        import torch.nn.functional as F
+
+        ref = self._predict_once(x)
+        if isinstance(ref, (list, tuple)):
+            ref = ref[0]
+        ref_size = ref.shape[-2:]
+        gs = int(self.stride.max())
+        scales = (0.75, 1.0, 1.25)
+        preds = []
+        for scale in scales:
+            for flip in (False, True):
+                xi = x.flip(-1) if flip else x
+                xi = scale_img(xi, scale, gs=gs)
+                yi = self._predict_once(xi)
+                if isinstance(yi, (list, tuple)):
+                    yi = yi[0]
+                if flip:
+                    yi = yi.flip(-1)
+                yi = F.interpolate(yi.float(), size=ref_size, mode="bilinear", align_corners=True)
+                preds.append(yi)
+        return torch.stack(preds, 0).mean(0)
+
     def init_criterion(self):
         """Initialize the depth loss criterion."""
         return DepthLoss26(self)

@@ -34,9 +34,17 @@ class DepthValidator(DetectionValidator):
         self.args.task = "depth"
 
     def init_metrics(self, model: torch.nn.Module) -> None:
-        """Initialize the DepthMetrics accumulator with the dataset's depth range."""
-        self.metrics = DepthMetrics(max_depth=self.data.get("max_depth") or 100.0)
+        """Initialize the DepthMetrics accumulator with the dataset's depth range.
+
+        ``augment=True`` selects the headline YOLO26 protocol approximation: multi-scale + flip TTA (see
+        ``DepthModel._predict_augment``) with per-image log-least-squares alignment. Default val keeps single-scale
+        median alignment for the documented reproducible numbers.
+        """
+        align = "log_ls" if (not self.training and getattr(self.args, "augment", False)) else "median"
+        self.metrics = DepthMetrics(max_depth=self.data.get("max_depth") or 100.0, align=align)
         self.metrics.clear_stats()
+        if align == "log_ls":
+            LOGGER.info("Depth val protocol: multi-scale+flip TTA with log-least-squares alignment")
 
     def preprocess(self, batch: dict[str, Any]) -> dict[str, Any]:
         """Preprocess batch — move to device, normalize images, and keep depth as float32."""

@@ -1,6 +1,6 @@
 # 07 · 本地代码改动说明
 
-相对 `origin/main`（本实验基线 `e13eb540`），仅 **3 个文件** 有业务改动，服务于 Depth 表头协议近似。
+相对 `origin/main`（基线约 `e13eb540`），本分支 **`official_example` 已直接包含** Depth 表头协议近似的 **3 个文件**改动，**无需再应用 patch**。
 
 ```
 ultralytics/utils/metrics.py                 | DepthMetrics + align="log_ls"
@@ -8,7 +8,7 @@ ultralytics/nn/tasks.py                      | DepthModel._predict_augment
 ultralytics/models/yolo/depth/val.py         | augment=True → log_ls
 ```
 
-`git diff --stat` 量级约：+57 / −9 行。
+量级约：+57 / −9 行。
 
 ## 行为契约
 
@@ -19,24 +19,13 @@ ultralytics/models/yolo/depth/val.py         | augment=True → log_ls
 
 训练路径不受影响（`self.training` 时仍用 median）。
 
-## 导出 / 应用补丁
-
-本目录已包含可应用补丁：[`patches/depth-tta-logls.patch`](patches/depth-tta-logls.patch)（相对 `origin/main` 三文件 diff）。
-
-干净 main 上：
+## 新环境用法
 
 ```bash
-git apply docs/official_example/patches/depth-tta-logls.patch
-# 或：git am / cherry-pick 含该改动的 commit
-```
-
-若工作树已改动、需重新导出：
-
-```bash
-git diff ultralytics/utils/metrics.py \
-         ultralytics/nn/tasks.py \
-         ultralytics/models/yolo/depth/val.py \
-  > docs/official_example/patches/depth-tta-logls.patch
+git clone -b official_example git@github.com:yang-yang-o-o/ultralytics.git
+cd ultralytics
+# Depth TTA 已在分支内，直接：
+yolo depth val model=yolo26n-depth.pt data=nyu-depth.yaml device=0 imgsz=768 augment=True
 ```
 
 ## 实现要点（便于审查）

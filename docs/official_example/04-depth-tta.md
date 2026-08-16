@@ -27,7 +27,7 @@
 # 单尺度（upstream 行为，对齐 0.783）
 yolo depth val model=yolo26n-depth.pt data=nyu-depth.yaml device=0 imgsz=768
 
-# 表头近似（需上述改动）
+# 表头近似（本分支 official_example 已含改动）
 yolo depth val model=yolo26n-depth.pt data=nyu-depth.yaml device=0 imgsz=768 augment=True
 ```
 
