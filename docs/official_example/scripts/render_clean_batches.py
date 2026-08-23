@@ -12,8 +12,8 @@ import ultralytics.models.yolo.obb.val as obb_val
 import ultralytics.utils.plotting as plotting
 from ultralytics import YOLO
 
-# Repo root = parents[2] from docs/official_example/scripts/this_file.py
-ROOT = Path(__file__).resolve().parents[2]
+# Repo root: .../ultralytics/docs/official_example/scripts/this_file.py → parents[3]
+ROOT = Path(__file__).resolve().parents[3]
 OUT = ROOT / "runs/official_val/results_video/clean"
 OUT.mkdir(parents=True, exist_ok=True)
 

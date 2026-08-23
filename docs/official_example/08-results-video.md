@@ -38,7 +38,7 @@ runs/depth/.../depth_single/          # 单尺度
 runs/depth/.../depth_tta_logls/       # augment=True
 ```
 
-路径随你 `project=` / `name=` 可能多一层 task 目录；`make_results_video.py` 里对 clean 子目录用 `**/name` 查找。
+路径随你 `project=` / `name=` 可能多一层 task 目录；`make_results_video.py` 会在 `runs/**/<name>` 下查找 `val_batch*_pred.jpg`。新机器请用 [00-new-machine.md](00-new-machine.md) 第 4 节的 `name=`。
 
 ## 一步步命令
 

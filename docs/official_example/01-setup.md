@@ -1,5 +1,8 @@
 # 01 · 环境与仓库设置
 
+> **换机复现请先读 [00-new-machine.md](00-new-machine.md)。**  
+> 不要从 `origin/main` 重新切分支，否则会丢掉本实验已提交的 Depth TTA 与文档。
+
 ## 目标状态
 
 | 项 | 值 |

@@ -8,6 +8,7 @@
 | 文档 | 内容 |
 |---|---|
 | [README.md](README.md)（本页） | 起因、结论总表、阅读顺序 |
+| [00-new-machine.md](00-new-machine.md) | **新机器入口**：从 `origin/official_example` 重建代码/环境/数据/结论 |
 | [01-setup.md](01-setup.md) | 拉仓、分支、uv 环境、系统依赖 |
 | [02-datasets.md](02-datasets.md) | 各任务验证集下载、镜像、目录布局、踩坑 |
 | [03-evaluation.md](03-evaluation.md) | 评测命令、指标对照、日志路径 |
@@ -74,5 +75,6 @@ Detect / Segment / OBB：框上无文字 label，左侧色块图例与框颜色�
 
 ## 建议阅读顺序
 
-新环境复现 → 先读 [06-reproduce.md](06-reproduce.md)，出片看 [08-results-video.md](08-results-video.md)，细节回查 01–05、07。  
+新环境 / 换机 → **先读 [00-new-machine.md](00-new-machine.md)**（代码、环境、val 数据、评测、出片一条龙）。  
+清单对照 → [06-reproduce.md](06-reproduce.md)；出片细节 → [08-results-video.md](08-results-video.md)；其余 01–05、07 作附录。  
 只关心结论 → 本页总表 + [05-known-gaps.md](05-known-gaps.md)。

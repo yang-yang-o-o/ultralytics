@@ -12,8 +12,8 @@ import numpy as np
 from ultralytics import YOLO
 from ultralytics.utils import SETTINGS
 
-# Repo root = parents[2] from docs/official_example/scripts/this_file.py
-ROOT = Path(__file__).resolve().parents[2]
+# Repo root: .../ultralytics/docs/official_example/scripts/this_file.py → parents[3]
+ROOT = Path(__file__).resolve().parents[3]
 DATASETS = Path(SETTINGS.get("datasets_dir", ROOT.parent / "datasets"))
 OUT_DIR = ROOT / "runs/official_val/results_video"
 FRAMES = OUT_DIR / "frames"
@@ -323,6 +323,15 @@ def load(path: Path) -> np.ndarray | None:
     return im
 
 
+def find_named_run(name: str) -> Path:
+    """Locate a val run directory by name under runs/, ignoring extra YOLO task nesting."""
+    hits = [p for p in ROOT.glob(f"runs/**/{name}") if p.is_dir() and any(p.glob("val_batch*_pred.jpg"))]
+    if hits:
+        # Prefer the shortest path (least accidental nesting).
+        return sorted(hits, key=lambda p: (len(p.parts), str(p)))[0]
+    return ROOT / "runs" / name
+
+
 def render_pose_gt(image_path: Path, output_path: Path) -> Path:
     """Render COCO person boxes/keypoints on the original image for GT comparison."""
     if output_path.exists():
@@ -459,7 +468,7 @@ def main() -> None:
             emit(frames, panel_pair_auto(gt, pred, "Pose", f"AP 57.2 = 57.2  |  {pred_path.name}"), 2.5)
 
     # --- Semantic (existing) ---
-    sem = ROOT / "runs/semantic/runs/official_val/sem_cityscapes"
+    sem = find_named_run("sem_cityscapes")
     emit(frames, banner("Semantic — Cityscapes val", ["imgsz=2048", "mIoU 78.3 = official 78.3"]), 3)
     for i in range(3):
         lab, pred = load(sem / f"val_batch{i}_labels.jpg"), load(sem / f"val_batch{i}_pred.jpg")
@@ -467,7 +476,7 @@ def main() -> None:
             emit(frames, panel_pair_auto(lab, pred, "Semantic Segmentation", f"mIoU 78.3 = 78.3  |  val_batch{i}"), 3)
 
     # --- Classify ---
-    cls = ROOT / "runs/classify/runs/official_val/cls_imagenet"
+    cls = find_named_run("cls_imagenet")
     emit(frames, banner("Classify — ImageNet val", ["top1 71.4 / top5 90.1 = official"]), 3)
     for i in range(3):
         lab, pred = load(cls / f"val_batch{i}_labels.jpg"), load(cls / f"val_batch{i}_pred.jpg")
@@ -475,8 +484,8 @@ def main() -> None:
             emit(frames, panel_pair_auto(lab, pred, "ImageNet Classification", f"71.4 / 90.1  |  val_batch{i}"), 3)
 
     # --- Depth (val batches: GT + Prediction) ---
-    depth_single = ROOT / "runs/depth/runs/depth/runs/official_val/depth_single"
-    depth_tta = ROOT / "runs/depth/runs/official_val/depth_tta_logls"
+    depth_single = find_named_run("depth_single")
+    depth_tta = find_named_run("depth_tta_logls")
     emit(
         frames,
         banner(
